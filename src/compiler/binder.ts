@@ -126,7 +126,7 @@ module ts {
 
             var name = getDeclarationName(node);
             if (name !== undefined) {
-                var symbol = hasProperty(symbols, name) ? symbols[name] : (symbols[name] = createSymbol(SymbolFlags.None, name));
+                var symbol = hasProperty(symbols, name) ? symbols[name] : (symbols[name] = createSymbol(0, name));
                 if (symbol.flags & excludes) {
                     if (node.name) {
                         node.name.parent = node;
@@ -143,11 +143,11 @@ module ts {
                     });
                     file.semanticDiagnostics.push(createDiagnosticForNode(node.name, message, getDisplayName(node)));
 
-                    symbol = createSymbol(SymbolFlags.None, name);
+                    symbol = createSymbol(0, name);
                 }
             }
             else {
-                symbol = createSymbol(SymbolFlags.None, "__missing");
+                symbol = createSymbol(0, "__missing");
             }
             addDeclarationToSymbol(symbol, node, includes);
             symbol.parent = parent;
@@ -192,7 +192,7 @@ module ts {
             //   2. When we checkIdentifier in the checker, we set its resolved symbol to the local symbol,
             //      but return the export symbol (by calling getExportSymbolOfValueSymbolIfExported). That way
             //      when the emitter comes back to it, it knows not to qualify the name if it was found in a containing scope.
-            var exportKind = SymbolFlags.None;
+            var exportKind = 0;
             if (symbolKind & SymbolFlags.Value) {
                 exportKind |= SymbolFlags.ExportValue;
             }
@@ -384,7 +384,7 @@ module ts {
                 case SyntaxKind.VariableDeclaration:
                 case SyntaxKind.BindingElement:
                     if (isBindingPattern((<Declaration>node).name)) {
-                        bindChildren(node, SymbolFlags.None, /*isBlockScopeContainer*/ false);
+                        bindChildren(node, 0, /*isBlockScopeContainer*/ false);
                     }
                     else if (getCombinedNodeFlags(node) & NodeFlags.BlockScoped) {
                         bindBlockScopedVariableDeclaration(<Declaration>node);
@@ -395,7 +395,7 @@ module ts {
                     break;
                 case SyntaxKind.PropertyDeclaration:
                 case SyntaxKind.PropertySignature:
-                    bindDeclaration(<Declaration>node, SymbolFlags.Property | ((<PropertyDeclaration>node).questionToken ? SymbolFlags.Optional : SymbolFlags.None), SymbolFlags.PropertyExcludes, /*isBlockScopeContainer*/ false);
+                    bindDeclaration(<Declaration>node, SymbolFlags.Property | ((<PropertyDeclaration>node).questionToken ? SymbolFlags.Optional : 0), SymbolFlags.PropertyExcludes, /*isBlockScopeContainer*/ false);
                     break;
                 case SyntaxKind.PropertyAssignment:
                 case SyntaxKind.ShorthandPropertyAssignment:
@@ -407,7 +407,7 @@ module ts {
                 case SyntaxKind.CallSignature:
                 case SyntaxKind.ConstructSignature:
                 case SyntaxKind.IndexSignature:
-                    bindDeclaration(<Declaration>node, SymbolFlags.Signature, /*excludes*/ SymbolFlags.None, /*isBlockScopeContainer*/ false);
+                    bindDeclaration(<Declaration>node, SymbolFlags.Signature, 0, /*isBlockScopeContainer*/ false);
                     break;
                 case SyntaxKind.MethodDeclaration:
                 case SyntaxKind.MethodSignature:
@@ -415,14 +415,14 @@ module ts {
                     // as other properties in the object literal.  So we use SymbolFlags.PropertyExcludes
                     // so that it will conflict with any other object literal members with the same
                     // name.
-                    bindDeclaration(<Declaration>node, SymbolFlags.Method | ((<MethodDeclaration>node).questionToken ? SymbolFlags.Optional : SymbolFlags.None),
+                    bindDeclaration(<Declaration>node, SymbolFlags.Method | ((<MethodDeclaration>node).questionToken ? SymbolFlags.Optional : 0),
                         isObjectLiteralMethod(node) ? SymbolFlags.PropertyExcludes : SymbolFlags.MethodExcludes, /*isBlockScopeContainer*/ true);
                     break;
                 case SyntaxKind.FunctionDeclaration:
                     bindDeclaration(<Declaration>node, SymbolFlags.Function, SymbolFlags.FunctionExcludes, /*isBlockScopeContainer*/ true);
                     break;
                 case SyntaxKind.Constructor:
-                    bindDeclaration(<Declaration>node, SymbolFlags.Constructor, /*symbolExcludes:*/ SymbolFlags.None, /*isBlockScopeContainer:*/ true);
+                    bindDeclaration(<Declaration>node, SymbolFlags.Constructor, /*symbolExcludes:*/ 0, /*isBlockScopeContainer:*/ true);
                     break;
                 case SyntaxKind.GetAccessor:
                     bindDeclaration(<Declaration>node, SymbolFlags.GetAccessor, SymbolFlags.GetAccessorExcludes, /*isBlockScopeContainer*/ true);
@@ -482,7 +482,7 @@ module ts {
                 case SyntaxKind.ForStatement:
                 case SyntaxKind.ForInStatement:
                 case SyntaxKind.SwitchStatement:
-                    bindChildren(node, SymbolFlags.None, /*isBlockScopeContainer*/ true);
+                    bindChildren(node, 0, /*isBlockScopeContainer*/ true);
                     break;
                 default:
                     var saveParent = parent;
@@ -504,7 +504,7 @@ module ts {
 
             // If this is a property-parameter, then also declare the property symbol into the 
             // containing class.
-            if ((node.flags & NodeFlags.AccessibilityModifier) &&
+            if (node.flags & NodeFlags.AccessibilityModifier &&
                 node.parent.kind === SyntaxKind.Constructor &&
                 node.parent.parent.kind === SyntaxKind.ClassDeclaration) {
 
