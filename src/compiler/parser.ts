@@ -2155,8 +2155,7 @@ module ts {
 
         function parseParameter(): ParameterDeclaration {
             var node = <ParameterDeclaration>createNode(SyntaxKind.Parameter);
-            var modifiers = parseModifiers();
-            setModifiers(node, modifiers);
+            setModifiers(node, parseModifiers());
             node.dotDotDotToken = parseOptionalToken(SyntaxKind.DotDotDotToken);
 
             // SingleNameBinding[Yield,GeneratorParameter] : See 13.2.3
@@ -2164,10 +2163,6 @@ module ts {
             //      [~GeneratorParameter]BindingIdentifier[?Yield]Initializer[In, ?Yield]opt
 
             node.name = inGeneratorParameterContext() ? doInYieldContext(parseIdentifierOrPattern) : parseIdentifierOrPattern();
-
-            if (isBindingPattern(node.name)) {
-                propagateModifiersToBindingElements(<BindingPattern>node.name, modifiers);
-            }
 
             if (getFullWidth(node.name) === 0 && node.flags === 0 && isModifier(token)) {
                 // in cases like
@@ -2194,18 +2189,6 @@ module ts {
             // overload signatures. So parameter initializers are transitively disallowed in
             // ambient contexts.
             return finishNode(node);
-        }
-
-        function propagateModifiersToBindingElements(bindingPattern: BindingPattern, modifiers: ModifiersArray): void {
-            forEach(bindingPattern.elements, propagate);
-
-            function propagate(node: BindingElement): void {
-                setModifiers(node, modifiers);
-
-                if (isBindingPattern(node.name)) {
-                    forEach((<BindingPattern>node.name).elements, propagate); 
-                }
-            }
         }
 
         function parseParameterInitializer() {
